@@ -1,19 +1,4 @@
 <?php
-require __DIR__ . '/vendor/autoload.php';
-
-function rf(Closure $f) {
-    return new class($f) {
-        private $f;
-        public function __construct(Closure $f)
-        {
-            $this->f = $f;
-        }
-
-        public function __invoke() {
-            return ($this->f->bindTo($this))(...func_get_args());
-        }
-    };
-}
 
 function answer(string $answer) : Closure {
     return function() use ($answer) : void { print $answer; };
@@ -135,14 +120,7 @@ function days(array $events, \Carbon\Carbon $day) {
         };
     },
     'Genoeg ruimte in je rooster zit om stage- en afstudeerbezoeken te organiseren?' => function(array $events) : Closure {
-        $preferredKalenderweekAfstudeerbezoek = rf(function() {
-            echo PHP_EOL . 'Kalenderweek afstudeerbezoek []: ';
-            $answer = Seld\CliPrompt\CliPrompt::prompt();
-            if (empty($answer)){
-                return $this();
-            }
-            return (int)$answer;
-        })();
+        $preferredKalenderweekAfstudeerbezoek = (int)prompt('Kalenderweek afstudeerbezoek');
 
         $range = [$preferredKalenderweekAfstudeerbezoek - 1, $preferredKalenderweekAfstudeerbezoek, $preferredKalenderweekAfstudeerbezoek+1];
 

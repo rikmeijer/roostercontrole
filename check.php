@@ -1,12 +1,23 @@
-<?php return function(string $iCalURL, array $checks) {
+<?php
+require __DIR__ . '/vendor/autoload.php';
+
+function prompt(string $question, $default = null) {
+    echo PHP_EOL . $question . ($default ? ' [' . $default . ']' : '') . ': ';
+    $answer = Seld\CliPrompt\CliPrompt::prompt();
+    if (empty($answer) === false) {
+        return $answer;
+    } elseif ($default !== null) {
+        return $default;
+    }
+    return prompt($question, $default);
+}
+
+return function(string $iCalURL, array $checks) {
 
     $icalReader = new \ICal\ICal($iCalURL);
     $events = array_filter($icalReader->events(), (function(\Carbon\Carbon $startDateTime) {
-        echo 'Vanaf datum [' . $startDateTime->toDateString() .']: ';
-        $answer = Seld\CliPrompt\CliPrompt::prompt();
-        if (empty($answer) === false){
-            $startDateTime = \Carbon\Carbon::createFromFormat(\Carbon\Carbon::DEFAULT_TO_STRING_FORMAT, $answer . " 00:00:00");
-        }
+        $answer = prompt('Vanaf datum', $startDateTime->toDateString());
+        $startDateTime = \Carbon\Carbon::createFromFormat(\Carbon\Carbon::DEFAULT_TO_STRING_FORMAT, $answer . " 00:00:00");
         return function (\ICal\Event $event) use ($startDateTime) {
 
             $event->cstart = \Carbon\Carbon::createFromFormat(\ICal\ICal::DATE_TIME_FORMAT, $event->dtstart_tz);
