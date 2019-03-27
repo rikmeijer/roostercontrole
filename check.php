@@ -2,14 +2,25 @@
 require __DIR__ . '/vendor/autoload.php';
 
 function prompt(string $question, $default = null) {
+    $defaultValueFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . md5($question);
+    if ($default === null && file_exists($defaultValueFile)) {
+        $default = file_get_contents($defaultValueFile);
+    }
     echo PHP_EOL . $question . ($default ? ' [' . $default . ']' : '') . ': ';
     $answer = Seld\CliPrompt\CliPrompt::prompt();
     if (empty($answer) === false) {
+        file_put_contents($defaultValueFile, $answer);
         return $answer;
     } elseif ($default !== null) {
         return $default;
     }
     return prompt($question, $default);
+}
+function answer(string $answer) : Closure {
+    return function() use ($answer) : void { print $answer; };
+}
+function answerYes() : Closure {
+    return answer('Ja!');
 }
 
 return function(string $iCalURL, array $checks) {

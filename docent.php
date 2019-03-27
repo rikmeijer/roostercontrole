@@ -1,11 +1,5 @@
 <?php
 
-function answer(string $answer) : Closure {
-    return function() use ($answer) : void { print $answer; };
-}
-function answerYes() : Closure {
-    return answer('Ja!');
-}
 function duration(array $events) {
     $duration = 0;
     foreach ($events as $chainEvent) {
