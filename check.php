@@ -3,7 +3,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 function prompt(string $question, $default = null) {
     $defaultValueFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . md5($question);
-    if ($default === null && file_exists($defaultValueFile)) {
+    if (file_exists($defaultValueFile)) {
         $default = file_get_contents($defaultValueFile);
     }
     echo PHP_EOL . $question . ($default ? ' [' . $default . ']' : '') . ': ';
