@@ -1,6 +1,11 @@
 <?php
 require __DIR__ . '/vendor/autoload.php';
 
+function map(array $array, Closure $mapper) {
+    return array_map($mapper, $array);
+}
+
+
 function prompt(string $question, $default = null) {
     $defaultValueFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . md5($question);
     if (file_exists($defaultValueFile)) {
@@ -23,36 +28,40 @@ function answerYes() : Closure {
     return answer('Ja!');
 }
 
-return function(string $iCalURL, array $checks) {
+return function(array $checks) {
+    $fEvents = function(string $iCalURL) : array {
+        static $events = [];
+        if (array_key_exists($iCalURL,$events) === false) {
+            $icalReader = new \ICal\ICal($iCalURL);
+            $events[$iCalURL] = array_filter($icalReader->events(), (function(\Carbon\Carbon $startDateTime) use ($iCalURL) {
+                $answer = prompt('(' . basename($iCalURL) . ') Vanaf datum', $startDateTime->toDateString());
+                $startDateTime = \Carbon\Carbon::createFromFormat(\Carbon\Carbon::DEFAULT_TO_STRING_FORMAT, $answer . " 00:00:00");
+                return function (\ICal\Event $event) use ($startDateTime) {
 
-    $icalReader = new \ICal\ICal($iCalURL);
-    $events = array_filter($icalReader->events(), (function(\Carbon\Carbon $startDateTime) {
-        $answer = prompt('Vanaf datum', $startDateTime->toDateString());
-        $startDateTime = \Carbon\Carbon::createFromFormat(\Carbon\Carbon::DEFAULT_TO_STRING_FORMAT, $answer . " 00:00:00");
-        return function (\ICal\Event $event) use ($startDateTime) {
+                    $event->cstart = \Carbon\Carbon::createFromFormat(\ICal\ICal::DATE_TIME_FORMAT, $event->dtstart_tz);
+                    $event->work = $event->blocking = true;
 
-            $event->cstart = \Carbon\Carbon::createFromFormat(\ICal\ICal::DATE_TIME_FORMAT, $event->dtstart_tz);
-            $event->work = $event->blocking = true;
-
-            if ($event->cstart->lessThanOrEqualTo($startDateTime)) {
-                return false;
-            } elseif (preg_match('/(Blokkade IN|Roosterblokkade|Colloquium)/', $event->summary) === 1) {
-                $event->blocking = false;
-            } elseif (preg_match('/(Pasen|Hemelvaart|Roostervrij|Pinksteren|Goede vrijdag|Roostervrij)/', $event->summary) === 1) {
-                $event->blocking = false;
-                $event->work = false;
-            }
-            $event->cend = \Carbon\Carbon::createFromFormat(\ICal\ICal::DATE_TIME_FORMAT, $event->dtend_tz);
-            return true;
-        };
-    })(new \Carbon\Carbon()));
-
-    usort($events, function(\ICal\Event $eventA, \ICal\Event $eventB) {
-        return $eventA->cstart->lt($eventB->cstart) ? 0 : 1;
-    });
+                    if ($event->cstart->lessThanOrEqualTo($startDateTime)) {
+                        return false;
+                    } elseif (preg_match('/(Blokkade IN|Roosterblokkade|Colloquium)/', $event->summary) === 1) {
+                        $event->blocking = false;
+                    } elseif (preg_match('/(Pasen|Hemelvaart|Roostervrij|Pinksteren|Goede vrijdag|Roostervrij)/', $event->summary) === 1) {
+                        $event->blocking = false;
+                        $event->work = false;
+                    }
+                    $event->cend = \Carbon\Carbon::createFromFormat(\ICal\ICal::DATE_TIME_FORMAT, $event->dtend_tz);
+                    return true;
+                };
+            })(new \Carbon\Carbon()));
+            usort($events[$iCalURL], function(\ICal\Event $eventA, \ICal\Event $eventB) {
+                return $eventA->cstart->lt($eventB->cstart) ? 0 : 1;
+            });
+        }
+        return $events[$iCalURL];
+    };
 
     foreach ($checks as $checkIdentifier => $check) {
-        $result = $check($events);
+        $result = $check($fEvents);
         print PHP_EOL . $checkIdentifier . ' ';
         $result();
     }

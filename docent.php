@@ -26,9 +26,9 @@ function days(array $events, \Carbon\Carbon $day) {
     return $days;
 }
 
-(require __DIR__ . DIRECTORY_SEPARATOR . 'check.php')('https://rooster.avans.nl/gcal/Dhameijer', [
-    'Klopt het rooster met je inzet en je harde blokkades?' => function(array $events) : Closure {
-        $badEvents = array_filter($events, function(\ICal\Event $event) : bool {
+(require __DIR__ . DIRECTORY_SEPARATOR . 'check.php')([
+    'Klopt het rooster met je inzet en je harde blokkades?' => function(Closure $events) : Closure {
+        $badEvents = array_filter($events('https://rooster.avans.nl/gcal/Dhameijer'), function(\ICal\Event $event) : bool {
             return $event->blocking && ($event->cstart->isFriday() || $event->cend->isFriday());
         });
         if (count($badEvents) === 0) {
@@ -41,7 +41,8 @@ function days(array $events, \Carbon\Carbon $day) {
             }
         };
     },
-    'Zijn er dubbelboekingen die problemen opleveren?' => function(array $events) : Closure {
+    'Zijn er dubbelboekingen die problemen opleveren?' => function(Closure $events) : Closure {
+        $events = $events('https://rooster.avans.nl/gcal/Dhameijer');
         $collidingEvents = array_filter($events, function(\ICal\Event $event) use ($events) : bool {
 
             $event->collisions = [];
@@ -76,13 +77,14 @@ function days(array $events, \Carbon\Carbon $day) {
             }
         };
     },
-    'Staan eventuele incidentele blokkades goed in je rooster?' => function(array $events) : Closure {
+    'Staan eventuele incidentele blokkades goed in je rooster?' => function(Closure $events) : Closure {
         return answer('Onbekend');
     },
-    'Is er een redelijke verdeling van geroosterde uren?' => function(array $events) : Closure {
+    'Is er een redelijke verdeling van geroosterde uren?' => function(Closure $events) : Closure {
         return answer('Onbekend');
     },
-    'Zijn alle dagen te doen?' => function(array $events) : Closure {
+    'Zijn alle dagen te doen?' => function(Closure $events) : Closure {
+        $events = $events('https://rooster.avans.nl/gcal/Dhameijer');
         /**
          * @var Day[] $days
          */
@@ -113,7 +115,8 @@ function days(array $events, \Carbon\Carbon $day) {
             }
         };
     },
-    'Genoeg ruimte in je rooster zit om stage- en afstudeerbezoeken te organiseren?' => function(array $events) : Closure {
+    'Genoeg ruimte in je rooster zit om stage- en afstudeerbezoeken te organiseren?' => function(Closure $events) : Closure {
+        $events = $events('https://rooster.avans.nl/gcal/Dhameijer');
         $preferredKalenderweekAfstudeerbezoek = (int)prompt('Kalenderweek afstudeerbezoek');
 
         $range = [$preferredKalenderweekAfstudeerbezoek - 1, $preferredKalenderweekAfstudeerbezoek, $preferredKalenderweekAfstudeerbezoek+1];

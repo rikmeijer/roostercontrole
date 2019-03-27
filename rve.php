@@ -1,15 +1,18 @@
 <?php
-(require __DIR__ . DIRECTORY_SEPARATOR . 'check.php')('https://rooster.avans.nl/gcal/Dhameijer', [
-    "Is het rooster voor alle studentgroepen goed en niet teveel versnipperd over de dagen?" => function(array $events) : Closure {
-        $roostergroepen = explode(',', prompt('Welke roostergroepen? (comma-gescheiden)'));
+(require __DIR__ . DIRECTORY_SEPARATOR . 'check.php')([
+    "Is het rooster voor alle studentgroepen goed en niet teveel versnipperd over de dagen?" => function(Closure $events) : Closure {
+        $roostergroepEvents = map(explode(',', prompt('Welke roostergroepen? (comma-gescheiden)')), function(string $roostergroep) use ($events) {
+            return $events('https://rooster.avans.nl/gcal/G' . $roostergroep);
+        });
 
+        // check them!
 
         return answerYes();
     },
-    "Staan alle vakoverstijgende activiteiten (bijv. kickoff, inzage) goed in het rooster?" => function(array $events) : Closure {
+    "Staan alle vakoverstijgende activiteiten (bijv. kickoff, inzage) goed in het rooster?" => function(Closure $events) : Closure {
         return answerYes();
     },
-    "Is het blokrapportage-overleg geroosterd met de juiste docenten?" => function(array $events) : Closure {
+    "Is het blokrapportage-overleg geroosterd met de juiste docenten?" => function(Closure $events) : Closure {
         return answerYes();
     },
 ]);
