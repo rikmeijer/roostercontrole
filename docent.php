@@ -6,11 +6,11 @@ function rf(Closure $f) {
         private $f;
         public function __construct(Closure $f)
         {
-            $this->f = $f->bindTo($this);
+            $this->f = $f;
         }
 
         public function __invoke() {
-            return ($this->f)(...func_get_args());
+            return ($this->f->bindTo($this))(...func_get_args());
         }
     };
 }
