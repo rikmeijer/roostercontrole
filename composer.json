@@ -1,0 +1,6 @@
+{
+    "require": {
+        "johngrogg/ics-parser": "^2.1",
+        "seld/cli-prompt": "^1.0"
+    }
+}
