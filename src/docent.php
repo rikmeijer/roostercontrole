@@ -14,12 +14,10 @@
             }
         };
     }, 'Zijn er dubbelboekingen die problemen opleveren?' => function (Closure $events): Closure {
-        $events = $events('https://rooster.avans.nl/gcal/Dhameijer');
-        $collidingEvents = array_filter($events, function (\ICal\Event $event) use ($events) : bool {
-
+        return ifcount(array_filter($events('https://rooster.avans.nl/gcal/Dhameijer'), function (\ICal\Event $event) use ($events) : bool {
             $event->collisions = [];
             if ($event->blocking) {
-                foreach ($events as $pastEvent) {
+                foreach ($events('https://rooster.avans.nl/gcal/Dhameijer') as $pastEvent) {
                     if ($pastEvent->blocking === false) {
                         continue;
                     } elseif ($event->uid === $pastEvent->uid) {
@@ -33,49 +31,42 @@
                 }
             }
             return count($event->collisions) > 0;
-        });
-        if (count($collidingEvents) === 0) {
-            return answer('Nee!');
-        }
+        }), answer('Nee!'), function(array $collidingEvents) {
+            return function (Closure $console) use ($collidingEvents) : void {
+                $console('Ja', false);
+                foreach ($collidingEvents as $collidingEvent) {
+                    $console("- [" . $collidingEvent->cstart->toDateString() . '] ' . ($collidingEvent->summary));
+                    foreach ($collidingEvent->collisions as $matchedEvent) {
+                        $console("\t- " . ($matchedEvent->summary));
 
-        return function (Closure $console) use ($collidingEvents) : void {
-            $console('Ja', false);
-            foreach ($collidingEvents as $collidingEvent) {
-                $console("- [" . $collidingEvent->cstart->toDateString() . '] ' . ($collidingEvent->summary));
-                foreach ($collidingEvent->collisions as $matchedEvent) {
-                    $console("\t- " . ($matchedEvent->summary));
-
+                    }
                 }
-            }
-        };
+            };
+        });
     }, 'Staan eventuele incidentele blokkades goed in je rooster?' => function (Closure $events): Closure {
         return answer('Onbekend');
     }, 'Is er een redelijke verdeling van geroosterde uren?' => function (Closure $events): Closure {
         return answer('Onbekend');
     }, 'Zijn alle dagen te doen?' => function (Closure $events): Closure {
-        $hardDays = map(days($events('https://rooster.avans.nl/gcal/Dhameijer')), function (array $dayEvents): ?array {
+        return ifcount(map(days($events('https://rooster.avans.nl/gcal/Dhameijer')), function (array $dayEvents): ?array {
             if (count($dayEvents) < 4) {
                 return null;
             } elseif (reset($dayEvents)->cstart->diffInMinutes(end($dayEvents)->cend) < 6 * 60) {
                 return null;
             }
             return $dayEvents;
-        });
-
-
-        if (count($hardDays) === 0) {
-            return answerYes();
-        }
-
-        return function (Closure $console) use ($hardDays) : void {
-            $console('Nee: ');
-            foreach ($hardDays as $dayIdentifier => $hardDay) {
-                $console("- " . $dayIdentifier . ': ' . duration($hardDay) . ' min aaneengesloten');
-                foreach ($hardDay as $hardEvent) {
-                    $console("\t- [" . $hardEvent->cstart->toTimeString() . " - " . $hardEvent->cend->toTimeString() . "] " . ($hardEvent->summary));
+        }), answerYes(), function(array $hardDays) {
+            return function (Closure $console) use ($hardDays) : void
+            {
+                $console('Nee: ');
+                foreach (array_filter($hardDays) as $dayIdentifier => $hardDay) {
+                    $console("- " . $dayIdentifier . ': ' . duration($hardDay) . ' min aaneengesloten');
+                    foreach ($hardDay as $hardEvent) {
+                        $console("\t- [" . $hardEvent->cstart->toTimeString() . " - " . $hardEvent->cend->toTimeString() . "] " . ($hardEvent->summary));
+                    }
                 }
-            }
-        };
+            };
+        });
     }, 'Genoeg ruimte in je rooster zit om stage- en afstudeerbezoeken te organiseren?' => function (Closure $events) use ($console): Closure {
         $events = $events('https://rooster.avans.nl/gcal/Dhameijer');
         $preferredKalenderweekAfstudeerbezoek = $console('Kalenderweek afstudeerbezoek')()(function(string $answer) {
