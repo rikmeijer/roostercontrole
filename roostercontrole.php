@@ -2,10 +2,8 @@
 require __DIR__ . '/vendor/autoload.php';
 
 use function \Functional\map;
+use function \Functional\average;
 
-function average(array $array) : float {
-    return array_sum($array) / count($array);
-}
 function append(array $target, $key, array $source) {
     if (array_key_exists($key, $target) === false) {
         $target[$key] = $source;

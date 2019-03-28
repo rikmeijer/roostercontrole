@@ -1,5 +1,6 @@
 <?php
 use function \Functional\map;
+use function \Functional\average;
 
 return function(Closure $console) {
     (require __DIR__ . DIRECTORY_SEPARATOR . 'check.php')([
