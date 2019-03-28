@@ -1,10 +1,16 @@
 <?php return function(array $checks, Closure $console) {
-    $fEvents = function(string $iCalURL) : array {
+    $fEvents = function(string $iCalURL) use ($console) : array {
         static $events = [];
-        if (array_key_exists($iCalURL,$events) === false) {
+        if (array_key_exists($iCalURL, $events) === false) {
             $icalReader = new \ICal\ICal($iCalURL);
-            $events[$iCalURL] = array_filter($icalReader->events(), (function(\Carbon\Carbon $startDateTime) use ($iCalURL) {
-                $answer = prompt('(' . basename($iCalURL) . ') Vanaf datum', $startDateTime->toDateString());
+            $events[$iCalURL] = array_filter($icalReader->events(), (function(\Carbon\Carbon $startDateTime) use ($iCalURL, $console) {
+                $answer = $console('(' . basename($iCalURL) . ') Vanaf datum')(function (string $answer) use ($startDateTime) {
+                    if (empty($answer)) {
+                        return $startDateTime->toDateString();
+                    } else {
+                        return $answer;
+                    }
+                });
                 $startDateTime = \Carbon\Carbon::createFromFormat(\Carbon\Carbon::DEFAULT_TO_STRING_FORMAT, $answer . " 00:00:00");
                 return function (\ICal\Event $event) use ($startDateTime) {
 

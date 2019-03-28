@@ -76,9 +76,9 @@
                 }
             }
         };
-    }, 'Genoeg ruimte in je rooster zit om stage- en afstudeerbezoeken te organiseren?' => function (Closure $events): Closure {
+    }, 'Genoeg ruimte in je rooster zit om stage- en afstudeerbezoeken te organiseren?' => function (Closure $events) use ($console): Closure {
         $events = $events('https://rooster.avans.nl/gcal/Dhameijer');
-        $preferredKalenderweekAfstudeerbezoek = (int)prompt('Kalenderweek afstudeerbezoek');
+        $preferredKalenderweekAfstudeerbezoek = (int)$console('Kalenderweek afstudeerbezoek')();
 
         $range = [$preferredKalenderweekAfstudeerbezoek - 1, $preferredKalenderweekAfstudeerbezoek, $preferredKalenderweekAfstudeerbezoek + 1];
 

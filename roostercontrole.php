@@ -71,15 +71,48 @@ function duration(array $events) {
     return $duration;
 };
 
+
 function console() : Closure {
-    return function(string $line, bool $new_line = true) {
+    $prompt = function(string $line) : Closure {
+        $genericDefault = function(string $default = null) {
+            return function(string $answer) use ($default) {
+                if (empty($answer)) {
+                    return $default;
+                } else {
+                    return $answer;
+                }
+            };
+        };
+
+        return function(Closure $default = null) use ($genericDefault, $line) {
+            if ($default === null) {
+                $default = $genericDefault(null);
+            }
+            $defaultValueFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . md5($line);
+            if (file_exists($defaultValueFile)) {
+                $default = $genericDefault(file_get_contents($defaultValueFile));
+            }
+            print ($default('') ? ' [' . $default('') . ']' : '') . ': ';
+            while (true) {
+                $answer = $default(Seld\CliPrompt\CliPrompt::prompt());
+                if ($answer !== null) {
+                    file_put_contents($defaultValueFile, $answer);
+                    break;
+                }
+                print '↳ ';
+            }
+            return $answer;
+        };
+    };
+    return function(string $line, bool $new_line = true) use ($prompt) : Closure {
         print ($new_line ? PHP_EOL : '') . $line;
+        return $prompt($line);
     };
 }
 
 function indent(Closure $console) {
-    return function(string $line, bool $new_line = true) use ($console) {
-        $console(($new_line ? "\t" : '') . $line, $new_line);
+    return function(string $line, bool $new_line = true) use ($console) : Closure {
+        return $console(($new_line ? "\t" : '') . $line, $new_line);
     };
 }
 

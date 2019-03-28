@@ -1,7 +1,7 @@
 <?php return function(Closure $console) {
     (require __DIR__ . DIRECTORY_SEPARATOR . 'check.php')([
-        "Is het rooster voor alle studentgroepen goed en niet teveel versnipperd over de dagen?" => function(Closure $events) : Closure {
-            $roostergroepIdentifiers = explode(',', prompt('Welke roostergroepen? (comma-gescheiden)'));
+        "Is het rooster voor alle studentgroepen goed en niet teveel versnipperd over de dagen?" => function(Closure $events) use ($console) : Closure {
+            $roostergroepIdentifiers = explode(',', $console('Welke roostergroepen? (comma-gescheiden)')());
             $roostergroepen = array_combine($roostergroepIdentifiers, map($roostergroepIdentifiers, function(string $roostergroep) use ($events) {
                 return $events('https://rooster.avans.nl/gcal/G' . $roostergroep);
             }));
