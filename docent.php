@@ -7,24 +7,6 @@ function duration(array $events) {
     }
     return $duration;
 };
-function days(array $events, \Carbon\Carbon $day) {
-    $days = [];
-    while (count($events) > 0) {
-        $days[$day->toDateString()] = [];
-        $events = array_filter($events, function (\ICal\Event $event) use (&$day, &$days) {
-            if ($event->cstart->isSameDay($day)) {
-            } elseif ($event->cend->isSameDay($day)) {
-            } else {
-                return true;
-            }
-            $event->day = $day;
-            $days[$day->toDateString()][] = $event;
-            return false;
-        });
-        $day = $day->addDay(1);
-    }
-    return $days;
-}
 
 (require __DIR__ . DIRECTORY_SEPARATOR . 'check.php')([
     'Klopt het rooster met je inzet en je harde blokkades?' => function(Closure $events) : Closure {
@@ -84,21 +66,14 @@ function days(array $events, \Carbon\Carbon $day) {
         return answer('Onbekend');
     },
     'Zijn alle dagen te doen?' => function(Closure $events) : Closure {
-        $events = $events('https://rooster.avans.nl/gcal/Dhameijer');
-        /**
-         * @var Day[] $days
-         */
-        $days = days($events, reset($events)->cstart);
-
-        $prevEvent = null;
-        $hardDays = array_filter(array_map(function(array $dayEvents) : ?array {
+        $hardDays = array_filter(map(days($events('https://rooster.avans.nl/gcal/Dhameijer')), function(array $dayEvents) : ?array {
             if (count($dayEvents) < 4) {
                 return null;
             } elseif (reset($dayEvents)->cstart->diffInMinutes(end($dayEvents)->cend) < 6*60) {
                 return null;
             }
             return $dayEvents;
-        }, $days));
+        }));
 
 
         if (count($hardDays) === 0) {
@@ -126,7 +101,7 @@ function days(array $events, \Carbon\Carbon $day) {
                 return $event->cstart->weekOfYear === $kalenderweekAfstudeerbezoek;
             });
 
-            $days = days($kalenderweekAfstudeerbezoekEvents, reset($kalenderweekAfstudeerbezoekEvents)->cstart->startOfWeek());
+            $days = days($kalenderweekAfstudeerbezoekEvents);
 
             foreach ($days as $dayEvents) {
                 if (duration($dayEvents) < 4*60) {

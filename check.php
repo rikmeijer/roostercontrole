@@ -5,6 +5,17 @@ function map(array $array, Closure $mapper) {
     return array_map($mapper, $array);
 }
 
+function days(array $events) {
+    $days = [];
+    array_walk($events, function (\ICal\Event $event) use (&$days) {
+        if (array_key_exists($event->cstart->toDateString(), $days) === false) {
+            $days[$event->cstart->toDateString()] = [$event];
+        } else {
+            $days[$event->cstart->toDateString()][] = $event;
+        }
+    });
+    return $days;
+}
 
 function prompt(string $question, $default = null) {
     $defaultValueFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . md5($question);
