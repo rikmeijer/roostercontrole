@@ -4,17 +4,41 @@ require __DIR__ . '/vendor/autoload.php';
 function map(array $array, Closure $mapper) {
     return array_map($mapper, $array);
 }
+function average(array $array) : float {
+    return array_sum($array) / count($array);
+}
+function append(array $target, $key, array $source) {
+    if (array_key_exists($key, $target) === false) {
+        $target[$key] = $source;
+    } else {
+        $target[$key] += $source;
+    }
+    return $target;
+}
+function deviation(array $array) {
+    return sqrt(average(map($array, function($value) use ($array) {
+        return ($value - average($array)) ** 2;
+    })));
+}
+
+function aggregate(array $source, Closure $aggregateKey) : array {
+    $aggregate = [];
+    foreach ($source as $sourceKey => $sourceValue) {
+        $aggregatedKey = $aggregateKey($sourceKey, $sourceValue);
+        $aggregate = append($aggregate, $aggregatedKey, [$sourceKey => $sourceValue]);
+    }
+    return $aggregate;
+}
 
 function days(array $events) {
-    $days = [];
-    array_walk($events, function (\ICal\Event $event) use (&$days) {
-        if (array_key_exists($event->cstart->toDateString(), $days) === false) {
-            $days[$event->cstart->toDateString()] = [$event];
-        } else {
-            $days[$event->cstart->toDateString()][] = $event;
-        }
+    return aggregate($events, function(string $eventIdentifier, \ICal\Event $event) {
+        return $event->cstart->toDateString();
     });
-    return $days;
+}
+function weeks(array $events) {
+    return aggregate(days($events), function($dayIdentifier, $day){
+        return Carbon\Carbon::createFromFormat('Y-m-d', $dayIdentifier)->weekOfYear;
+    });
 }
 
 function prompt(string $question, $default = null) {
