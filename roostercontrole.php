@@ -101,13 +101,21 @@ function console() : Closure {
                 }
                 print '↳ ';
             }
-            return $answer;
+            return function(Closure $transform) use ($answer) {
+                return $transform($answer);
+            };
         };
     };
     return function(string $line, bool $new_line = true) use ($prompt) : Closure {
         print ($new_line ? PHP_EOL : '') . $line;
         return $prompt($line);
     };
+}
+function ifcount(array $array, Closure $zero, Closure $more) {
+    if (count($array) === 0) {
+        return $zero;
+    }
+    return $more($array);
 }
 
 function indent(Closure $console) {
