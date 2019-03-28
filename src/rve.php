@@ -1,24 +1,23 @@
 <?php return function(Closure $console) {
     (require __DIR__ . DIRECTORY_SEPARATOR . 'check.php')([
         "Is het rooster voor alle studentgroepen goed en niet teveel versnipperd over de dagen?" => function(Closure $events) use ($console) : Closure {
-            return ifcount(array_filter(map(map($console('Welke roostergroepen? (comma-gescheiden)')()(function(string $answer) {
+            return ifcount(map(map($console('Welke roostergroepen? (comma-gescheiden)')()(function(string $answer) {
                 return array_combine(explode(',', $answer), explode(',', $answer));
             }), function(string $roostergroep) use ($events) {
                 return $events('https://rooster.avans.nl/gcal/G' . $roostergroep);
             }), function(array $roostergroepDagen) {
-                $weeks = array_filter(map(weeks($roostergroepDagen), function(array $weekdays) {
+                return ifcount(map(weeks($roostergroepDagen), function(array $weekdays) {
                     if (count($weekdays) < 3) {
                         return 0;
                     }
                     $counts = map($weekdays, Closure::fromCallable('count'));
                     return (average($counts) < 2 || deviation($counts) > 0.75) ? 1 : 0;
-                }));
-                if (count($weeks) > 0) {
+                }), function() {}, function(array $weeks) {
                     return function() use ($weeks) {
                         return implode(', ', array_keys($weeks));
                     };
-                }
-            })), answerYes(), function(array $roostergroepenWeken) {
+                });
+            }), answerYes(), function(array $roostergroepenWeken) {
                 return function (Closure $console) use ($roostergroepenWeken) {
                     $console('Nee: ', false);
                     foreach ($roostergroepenWeken as $roostergroepIdentifier => $roostergroepenWeek) {

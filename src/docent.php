@@ -53,14 +53,14 @@
     }, 'Is er een redelijke verdeling van geroosterde uren?' => function (Closure $events): Closure {
         return answer('Onbekend');
     }, 'Zijn alle dagen te doen?' => function (Closure $events): Closure {
-        $hardDays = array_filter(map(days($events('https://rooster.avans.nl/gcal/Dhameijer')), function (array $dayEvents): ?array {
+        $hardDays = map(days($events('https://rooster.avans.nl/gcal/Dhameijer')), function (array $dayEvents): ?array {
             if (count($dayEvents) < 4) {
                 return null;
             } elseif (reset($dayEvents)->cstart->diffInMinutes(end($dayEvents)->cend) < 6 * 60) {
                 return null;
             }
             return $dayEvents;
-        }));
+        });
 
 
         if (count($hardDays) === 0) {
