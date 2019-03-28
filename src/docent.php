@@ -1,11 +1,12 @@
 <?php
 
 use function \Functional\map;
+use function \Functional\filter;
 
 return function(Closure $console) {
     (require __DIR__ . DIRECTORY_SEPARATOR . 'check.php')([
         'Klopt het rooster met je inzet en je harde blokkades?' => function (Closure $events): Closure {
-        $badEvents = array_filter($events('https://rooster.avans.nl/gcal/Dhameijer'), function (\ICal\Event $event): bool {
+        $badEvents = filter($events('https://rooster.avans.nl/gcal/Dhameijer'), function (\ICal\Event $event): bool {
             return $event->blocking && ($event->cstart->isFriday() || $event->cend->isFriday());
         });
         if (count($badEvents) === 0) {
@@ -18,7 +19,7 @@ return function(Closure $console) {
             }
         };
     }, 'Zijn er dubbelboekingen die problemen opleveren?' => function (Closure $events): Closure {
-        return ifcount(array_filter($events('https://rooster.avans.nl/gcal/Dhameijer'), function (\ICal\Event $event) use ($events) : bool {
+        return ifcount(filter($events('https://rooster.avans.nl/gcal/Dhameijer'), function (\ICal\Event $event) use ($events) : bool {
             $event->collisions = [];
             if ($event->blocking) {
                 foreach ($events('https://rooster.avans.nl/gcal/Dhameijer') as $pastEvent) {
@@ -79,8 +80,8 @@ return function(Closure $console) {
 
         $range = [$preferredKalenderweekAfstudeerbezoek - 1, $preferredKalenderweekAfstudeerbezoek, $preferredKalenderweekAfstudeerbezoek + 1];
 
-        $possibleKalenderweken = array_filter($range, function (int $kalenderweekAfstudeerbezoek) use ($events) {
-            $kalenderweekAfstudeerbezoekEvents = array_filter($events, function (\ICal\Event $event) use ($kalenderweekAfstudeerbezoek) {
+        $possibleKalenderweken = filter($range, function (int $kalenderweekAfstudeerbezoek) use ($events) {
+            $kalenderweekAfstudeerbezoekEvents = filter($events, function (\ICal\Event $event) use ($kalenderweekAfstudeerbezoek) {
                 return $event->cstart->weekOfYear === $kalenderweekAfstudeerbezoek;
             });
 
