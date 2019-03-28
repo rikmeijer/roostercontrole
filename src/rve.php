@@ -1,4 +1,7 @@
-<?php return function(Closure $console) {
+<?php
+use function \Functional\map;
+
+return function(Closure $console) {
     (require __DIR__ . DIRECTORY_SEPARATOR . 'check.php')([
         "Is het rooster voor alle studentgroepen goed en niet teveel versnipperd over de dagen?" => function(Closure $events) use ($console) : Closure {
             return ifcount(map(map($console('Welke roostergroepen? (comma-gescheiden)')()(function(string $answer) {

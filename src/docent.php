@@ -1,4 +1,8 @@
-<?php return function(Closure $console) {
+<?php
+
+use function \Functional\map;
+
+return function(Closure $console) {
     (require __DIR__ . DIRECTORY_SEPARATOR . 'check.php')([
         'Klopt het rooster met je inzet en je harde blokkades?' => function (Closure $events): Closure {
         $badEvents = array_filter($events('https://rooster.avans.nl/gcal/Dhameijer'), function (\ICal\Event $event): bool {

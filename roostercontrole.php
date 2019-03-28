@@ -1,9 +1,8 @@
 <?php
 require __DIR__ . '/vendor/autoload.php';
 
-function map(array $array, Closure $mapper) {
-    return array_map($mapper, $array);
-}
+use function \Functional\map;
+
 function average(array $array) : float {
     return array_sum($array) / count($array);
 }
