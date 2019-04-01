@@ -10,9 +10,9 @@ return function(array $checks, Closure $console) {
                     return \Carbon\Carbon::createFromFormat(\Carbon\Carbon::DEFAULT_TO_STRING_FORMAT, $answer . " 00:00:00");
                 }))) {
                     return false;
-                } elseif (preg_match('/(Blokkade IN|Roosterblokkade|Colloquium)/', $event->summary) === 1) {
+                } elseif (preg_match('/((Teamoverleg|Blokkade) IN|Roosterblokkade|Colloquium)/', $event->summary) === 1) {
                     $event->blocking = false;
-                } elseif (preg_match('/(Pasen|Hemelvaart|Roostervrij|Pinksteren|Goede vrijdag|Roostervrij)/', $event->summary) === 1) {
+                } elseif (preg_match('/(Jarigen lunch|Pasen|Hemelvaart|Roostervrij|Pinksteren|Goede vrijdag|Roostervrij)/', $event->summary) === 1) {
                     $event->blocking = false;
                     $event->work = false;
                 }
