@@ -119,20 +119,20 @@ function indent(Closure $console) {
 }
 
 $rollen = [
-    'docent' => "Docent",
-    'rve' => "Blokcoördinator",
-    'moco' => "Vakcoördinator",
+    "Docent" => require __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'docent.php',
+    "Blokcoördinator" => require __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'rve.php',
+    "Vakcoördinator" => require __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'moco.php',
 ];
 
-array_walk($rollen, function($rol, $rolIdentifier, Closure $console) {
-    $console('Als ' . $rol);
-    (require __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . $rolIdentifier . '.php')($console, $console('Vanaf datum')(function (string $answer) {
+\Functional\each($rollen, \Functional\partial_right(function(Closure $rol, string $rolIdentifier, array $rollen, Closure $console) {
+    $console('Als ' . $rolIdentifier);
+    $rol($console, $console('Vanaf datum')(function (string $answer) {
         if (empty($answer)) {
             return (new \Carbon\Carbon())->toDateString();
         } else {
             return $answer;
         }
     }));
-}, console());
+}, console()));
 
 print PHP_EOL;
