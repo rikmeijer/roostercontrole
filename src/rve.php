@@ -2,8 +2,8 @@
 use function \Functional\map;
 use function \Functional\average;
 
-return function(Closure $console) {
-    (require __DIR__ . DIRECTORY_SEPARATOR . 'check.php')([
+return function(Closure $console, Closure $startDateTme) {
+    (require __DIR__ . DIRECTORY_SEPARATOR . 'check.php')($startDateTme)([
         "Is het rooster voor alle studentgroepen goed en niet teveel versnipperd over de dagen?" => function(Closure $events) use ($console) : Closure {
             $roostergroepen = $console('Welke roostergroepen? (comma-gescheiden)')()(function(string $answer) use ($events) {
                 return array_combine(explode(',', $answer), map(explode(',', $answer), function(string $roostergroep) use ($events) {

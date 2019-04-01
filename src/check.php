@@ -1,7 +1,7 @@
 <?php
-return function(array $checks, Closure $console) {
-    $fEvents = (function(Closure $startDateTime) {
-        return function(string $iCalURL) use ($startDateTime) : array {
+return function(Closure $startDateTime) {
+     return function(array $checks, Closure $console) use ($startDateTime) {
+         $fEvents = function(string $iCalURL) use ($startDateTime) : array {
             return events($iCalURL, function (\ICal\Event $event) use ($startDateTime) {
                 $event->cstart = \Carbon\Carbon::createFromFormat(\ICal\ICal::DATE_TIME_FORMAT, $event->dtstart_tz);
                 $event->work = $event->blocking = true;
@@ -20,17 +20,11 @@ return function(array $checks, Closure $console) {
                 return true;
             });
         };
-    })($console('Vanaf datum')(function (string $answer) {
-        if (empty($answer)) {
-            return (new \Carbon\Carbon())->toDateString();
-        } else {
-            return $answer;
-        }
-    }));
 
-    foreach ($checks as $checkIdentifier => $check) {
-        $result = $check($fEvents);
-        $console($checkIdentifier . ' ');
-        $result(indent($console));
-    }
+         foreach ($checks as $checkIdentifier => $check) {
+             $result = $check($fEvents);
+             $console($checkIdentifier . ' ');
+             $result(indent($console));
+         }
+    };
 };

@@ -126,7 +126,13 @@ $rollen = [
 
 array_walk($rollen, function($rol, $rolIdentifier, Closure $console) {
     $console('Als ' . $rol);
-    (require __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . $rolIdentifier . '.php')($console);
+    (require __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . $rolIdentifier . '.php')($console, $console('Vanaf datum')(function (string $answer) {
+        if (empty($answer)) {
+            return (new \Carbon\Carbon())->toDateString();
+        } else {
+            return $answer;
+        }
+    }));
 }, console());
 
 print PHP_EOL;
