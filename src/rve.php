@@ -14,7 +14,9 @@ return function(Closure $console) {
                     if (count($weekdays) < 3) {
                         return 0;
                     }
-                    $counts = map($weekdays, Closure::fromCallable('count'));
+                    $counts = map($weekdays, function(array $value, $index, $collection) {
+                        return count($value);
+                    });
                     return (average($counts) < 2 || deviation($counts) > 0.75) ? 1 : 0;
                 }), function() {}, function(array $weeks) {
                     return function() use ($weeks) {
