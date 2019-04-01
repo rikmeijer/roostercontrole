@@ -69,15 +69,12 @@ return function (Closure $console) {
             };
         });
     }, 'Genoeg ruimte in je rooster zit om stage- en afstudeerbezoeken te organiseren?' => function (Closure $events) use ($console): Closure {
-        $events = $events('https://rooster.avans.nl/gcal/Dhameijer');
         $preferredKalenderweekAfstudeerbezoek = $console('Kalenderweek afstudeerbezoek')()(function (string $answer) {
             return (int)$answer;
         });
 
-        $range = [$preferredKalenderweekAfstudeerbezoek - 1, $preferredKalenderweekAfstudeerbezoek, $preferredKalenderweekAfstudeerbezoek + 1];
-
-        $possibleKalenderweken = filter($range, function (int $kalenderweekAfstudeerbezoek) use ($events) {
-            $kalenderweekAfstudeerbezoekEvents = filter($events, function (\ICal\Event $event) use ($kalenderweekAfstudeerbezoek) {
+        $possibleKalenderweken = filter(range($preferredKalenderweekAfstudeerbezoek - 1, $preferredKalenderweekAfstudeerbezoek + 1), function (int $kalenderweekAfstudeerbezoek) use ($events) {
+            $kalenderweekAfstudeerbezoekEvents = filter($events('https://rooster.avans.nl/gcal/Dhameijer'), function (\ICal\Event $event) use ($kalenderweekAfstudeerbezoek) {
                 return $event->cstart->weekOfYear === $kalenderweekAfstudeerbezoek;
             });
 
