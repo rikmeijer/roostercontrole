@@ -1,14 +1,13 @@
 <?php
 
-use function \Functional\map;
-use function \Functional\filter;
+use function Functional\filter;
+use function Functional\map;
 
-return function(Closure $console) {
-    (require __DIR__ . DIRECTORY_SEPARATOR . 'check.php')([
-        'Klopt het rooster met je inzet en je harde blokkades?' => function (Closure $events): Closure {
-            return ifcount(filter($events('https://rooster.avans.nl/gcal/Dhameijer'), function (\ICal\Event $event): bool {
+return function (Closure $console) {
+    (require __DIR__ . DIRECTORY_SEPARATOR . 'check.php')(['Klopt het rooster met je inzet en je harde blokkades?' => function (Closure $events): Closure {
+        return ifcount(filter($events('https://rooster.avans.nl/gcal/Dhameijer'), function (\ICal\Event $event): bool {
             return $event->blocking && ($event->cstart->isFriday() || $event->cend->isFriday());
-        }), answerYes(), function(array $badEvents) {
+        }), answerYes(), function (array $badEvents) {
             return function (Closure $console) use ($badEvents) : void {
                 $console('Nee: ', false);
                 foreach ($badEvents as $badEvent) {
@@ -34,7 +33,7 @@ return function(Closure $console) {
                 }
             }
             return count($event->collisions) > 0;
-        }), answer('Nee!'), function(array $collidingEvents) {
+        }), answer('Nee!'), function (array $collidingEvents) {
             return function (Closure $console) use ($collidingEvents) : void {
                 $console('Ja', false);
                 foreach ($collidingEvents as $collidingEvent) {
@@ -58,9 +57,8 @@ return function(Closure $console) {
                 return null;
             }
             return $dayEvents;
-        }), answerYes(), function(array $hardDays) {
-            return function (Closure $console) use ($hardDays) : void
-            {
+        }), answerYes(), function (array $hardDays) {
+            return function (Closure $console) use ($hardDays) : void {
                 $console('Nee: ');
                 foreach (array_filter($hardDays) as $dayIdentifier => $hardDay) {
                     $console("- " . $dayIdentifier . ': ' . duration($hardDay) . ' min aaneengesloten');
@@ -72,7 +70,7 @@ return function(Closure $console) {
         });
     }, 'Genoeg ruimte in je rooster zit om stage- en afstudeerbezoeken te organiseren?' => function (Closure $events) use ($console): Closure {
         $events = $events('https://rooster.avans.nl/gcal/Dhameijer');
-        $preferredKalenderweekAfstudeerbezoek = $console('Kalenderweek afstudeerbezoek')()(function(string $answer) {
+        $preferredKalenderweekAfstudeerbezoek = $console('Kalenderweek afstudeerbezoek')()(function (string $answer) {
             return (int)$answer;
         });
 
