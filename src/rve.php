@@ -5,11 +5,12 @@ use function \Functional\average;
 return function(Closure $console) {
     (require __DIR__ . DIRECTORY_SEPARATOR . 'check.php')([
         "Is het rooster voor alle studentgroepen goed en niet teveel versnipperd over de dagen?" => function(Closure $events) use ($console) : Closure {
-            return ifcount(map(map($console('Welke roostergroepen? (comma-gescheiden)')()(function(string $answer) {
-                return array_combine(explode(',', $answer), explode(',', $answer));
-            }), function(string $roostergroep) use ($events) {
-                return $events('https://rooster.avans.nl/gcal/G' . $roostergroep);
-            }), function(array $roostergroepDagen) {
+            $roostergroepen = $console('Welke roostergroepen? (comma-gescheiden)')()(function(string $answer) use ($events) {
+                return array_combine(explode(',', $answer), map(explode(',', $answer), function(string $roostergroep) use ($events) {
+                    return $events('https://rooster.avans.nl/gcal/G' . $roostergroep);
+                }));
+            });
+            return ifcount(map($roostergroepen, function(array $roostergroepDagen) {
                 return ifcount(map(weeks($roostergroepDagen), function(array $weekdays) {
                     if (count($weekdays) < 3) {
                         return 0;

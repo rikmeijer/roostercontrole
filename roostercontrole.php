@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . '/vendor/autoload.php';
 
+use function Functional\filter;
 use function \Functional\map;
 use function \Functional\average;
 
@@ -52,6 +53,18 @@ function duration(array $events) {
     return $duration;
 };
 
+
+function events(string $iCalURL, Closure $eventFilter) {
+    static $events = [];
+    if (array_key_exists($iCalURL, $events) === false) {
+        $icalReader = new \ICal\ICal($iCalURL);
+        $events[$iCalURL] = filter($icalReader->events(), $eventFilter);
+        usort($events[$iCalURL], function(\ICal\Event $eventA, \ICal\Event $eventB) {
+            return $eventA->cstart->lt($eventB->cstart) ? 0 : 1;
+        });
+    }
+    return $events[$iCalURL];
+}
 
 function console() : Closure {
     $prompt = function(string $line) : Closure {
