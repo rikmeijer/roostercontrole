@@ -50,17 +50,17 @@ return function (Closure $console) {
     }, 'Is er een redelijke verdeling van geroosterde uren?' => function (Closure $events): Closure {
         return answer('Onbekend');
     }, 'Zijn alle dagen te doen?' => function (Closure $events): Closure {
-        return ifcount(map(days($events('https://rooster.avans.nl/gcal/Dhameijer')), function (array $dayEvents): ?array {
+        return ifcount(array_filter(map(days($events('https://rooster.avans.nl/gcal/Dhameijer')), function (array $dayEvents): ?array {
             if (count($dayEvents) < 4) {
                 return null;
             } elseif (reset($dayEvents)->cstart->diffInMinutes(end($dayEvents)->cend) < 6 * 60) {
                 return null;
             }
             return $dayEvents;
-        }), answerYes(), function (array $hardDays) {
+        })), answerYes(), function (array $hardDays) {
             return function (Closure $console) use ($hardDays) : void {
                 $console('Nee: ');
-                foreach (array_filter($hardDays) as $dayIdentifier => $hardDay) {
+                foreach ($hardDays as $dayIdentifier => $hardDay) {
                     $console("- " . $dayIdentifier . ': ' . duration($hardDay) . ' min aaneengesloten');
                     foreach ($hardDay as $hardEvent) {
                         $console("\t- [" . $hardEvent->cstart->toTimeString() . " - " . $hardEvent->cend->toTimeString() . "] " . ($hardEvent->summary));
