@@ -136,8 +136,17 @@ function ifcount(array $array, Closure $zero, Closure $more)
 
 function when($pattern, Closure $then)
 {
-    return function ($value, Closure $next) use ($pattern, $then) {
-        if ($pattern === $value) {
+    if (is_string($pattern) && substr($pattern, 0, 1) === '/' && substr($pattern, -1) === '/') {
+        $match = function($value) use ($pattern) : bool {
+            return preg_match($pattern, $value) === 1;
+        };
+    } else {
+        $match = function($value) use ($pattern) : bool {
+            return $pattern === $value;
+        };
+    }
+    return function ($value, Closure $next) use ($match, $then) {
+        if ($match($value)) {
             return $then($value);
         }
         return $next($value);
