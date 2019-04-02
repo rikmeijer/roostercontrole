@@ -113,7 +113,7 @@ function ifcount(array $array, Closure $zero, Closure $more) {
     })(count($array));
 }
 
-function pattern(array $patterns) {
+function pattern(array $patterns) : Closure {
     if (count($patterns) === 0) {
         return function (Closure $else) {
             return function($value) use ($else) {
