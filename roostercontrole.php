@@ -39,7 +39,7 @@ function weeks(array $events) {
     });
 }
 function answer(string $answer) : Closure {
-    return function(Closure $cconsole) use ($answer) : void { $cconsole($answer, false); };
+    return function(Closure $console) use ($answer) : void { $console($answer, false); };
 }
 function answerYes() : Closure {
     return answer('Ja!');
@@ -105,12 +105,38 @@ function console() : Closure {
         return $prompt($line);
     };
 }
+
+
 function ifcount(array $array, Closure $zero, Closure $more) {
-    if (count($array) === 0) {
-        return $zero;
-    }
-    return $more($array);
+    return pattern([0 => function(int $value) use ($zero, $array) { return $zero; } ])(function(int $value) use ($more, $array) {
+        return $more($array);
+    })(count($array));
 }
+
+function pattern(array $patterns) {
+    if (count($patterns) === 0) {
+        return function (Closure $else) {
+            return function($value) use ($else) {
+                return $else($value);
+            };
+        };
+    }
+    return function (Closure $else) use ($patterns) {
+        return eval('return function($value) use ($patterns, $else) {
+            if (array_key_exists($value, $patterns)) {
+                return $patterns[$value]($value);
+            }
+            return $else($value);
+        };');
+    };
+}
+
+$i = 10;
+
+$pattern = pattern([
+
+])(function() {});
+
 
 function indent(Closure $console) {
     return function(string $line, bool $new_line = true) use ($console) : Closure {
