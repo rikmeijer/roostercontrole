@@ -11,7 +11,7 @@ return function(Closure $console, Closure $startDateTme) {
                 }));
             });
             return ifcount(map($roostergroepen, function(array $roostergroepDagen) {
-                return ifcount(map(weeks($roostergroepDagen), function(array $weekdays) {
+                return ifcount(map(weeks($roostergroepDagen), function(array $weekdays, $index, $collection) {
                     if (count($weekdays) < 3) {
                         return 0;
                     }
@@ -19,16 +19,15 @@ return function(Closure $console, Closure $startDateTme) {
                         return count($value);
                     });
                     return (average($counts) < 2 || deviation($counts) > 0.75) ? 1 : 0;
-                }), function() {}, function(array $weeks) {
+                }), function() { return 'OK'; }, function(array $weeks) {
                     return function() use ($weeks) {
-                        return implode(', ', array_keys($weeks));
+                        return 'kalenderweken: ' . implode(', ', array_keys($weeks));
                     };
                 });
             }), answerYes(), function(array $roostergroepenWeken) {
                 return function (Closure $console) use ($roostergroepenWeken) {
-                    $console('Nee: ', false);
                     foreach ($roostergroepenWeken as $roostergroepIdentifier => $roostergroepenWeek) {
-                        $console($roostergroepIdentifier . ': kalenderweken ' . $roostergroepenWeek());
+                        $console($roostergroepIdentifier . ': ' . $roostergroepenWeek());
                     }
                 };
             });
