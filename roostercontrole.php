@@ -1,9 +1,11 @@
 <?php
 require __DIR__ . '/vendor/autoload.php';
 
+use Carbon\Carbon;
 use function Functional\average;
 use function Functional\filter;
 use function Functional\map;
+use function Functional\partial_right;
 
 function append(array $target, $key, array $source)
 {
@@ -42,7 +44,7 @@ function days(array $events)
 function weeks(array $events)
 {
     return aggregate(days($events), function ($dayIdentifier, $day) {
-        return Carbon\Carbon::createFromFormat('Y-m-d', $dayIdentifier)->weekOfYear;
+        return Carbon::createFromFormat('Y-m-d', $dayIdentifier)->weekOfYear;
     });
 }
 
@@ -157,12 +159,17 @@ function patterns(Closure $pattern): Closure
 {
     $patterns = func_get_args();
     return function (Closure $else) use ($patterns) {
-        $patterns[] = function ($value, $next) use ($else) {
+        $patterns[] = function($value, Closure $next) use ($else) {
             return $else($value);
         };
-        return $next = function ($value) use (&$patterns, &$next) {
-            return (array_shift($patterns))($value, $next);
+        return function($value) use ($patterns) {
+            $current = array_shift($patterns);
+            return $current($value, $next = function($value) use (&$patterns, &$next) {
+                $current = array_shift($patterns);
+                return $current($value, $next);
+            });
         };
+
     };
 }
 
@@ -175,13 +182,15 @@ function indent(Closure $console)
 
 $rollen = ["Docent" => require __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'docent.php', "Blokcoördinator" => require __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'rve.php', "Vakcoördinator" => require __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'moco.php',];
 
-\Functional\each($rollen, \Functional\partial_right(function (Closure $rol, string $rolIdentifier, array $rollen, Closure $console) {
+\Functional\each($rollen, partial_right(function (Closure $rol, string $rolIdentifier, array $rollen, Closure $console) {
     $console('Als ' . $rolIdentifier);;
 
-    $rol($console, $console('Vanaf datum')(patterns(
-        when('', function (string $answer) {
-            return (new \Carbon\Carbon())->toDateString();
-        }))(function (string $answer) {
+    $rol($console, $console('Vanaf datum')(
+        patterns(
+            when('', function (string $answer) {
+                return (new Carbon())->toDateString();
+            })
+        )(function (string $answer) {
             return $answer;
         })
     ));
