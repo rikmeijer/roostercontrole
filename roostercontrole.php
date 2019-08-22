@@ -183,7 +183,7 @@ function indent(Closure $console)
 $rollen = ["Docent" => require __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'docent.php', "Blokcoördinator" => require __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'rve.php', "Vakcoördinator" => require __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'moco.php',];
 
 \Functional\each($rollen, partial_right(function (Closure $rol, string $rolIdentifier, array $rollen, Closure $console) {
-    $console('Als ' . $rolIdentifier);;
+    $console('Als ' . $rolIdentifier);
 
     $rol($console, $console('Vanaf datum')(
         patterns(
