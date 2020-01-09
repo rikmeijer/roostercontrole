@@ -2,6 +2,7 @@
 require __DIR__ . '/vendor/autoload.php';
 
 use Carbon\Carbon;
+use rikmeijer\functional\f;
 use function Functional\average;
 use function Functional\filter;
 use function Functional\map;
@@ -85,44 +86,45 @@ function events(string $iCalURL, Closure $eventFilter)
     return $events[$iCalURL];
 }
 
-function console(): Closure
-{
-    $prompt = function (string $line): Closure {
-        $genericDefault = function (string $default = null) {
-            return function (string $answer) use ($default) {
-                if (empty($answer)) {
-                    return $default;
-                } else {
-                    return $answer;
-                }
-            };
-        };
-
-        return function (Closure $default = null) use ($genericDefault, $line) {
-            if ($default === null) {
-                $default = $genericDefault(null);
+f::prompt(function (string $line): Closure {
+    $genericDefault = function (string $default = null) {
+        return function (string $answer) use ($default) {
+            if (empty($answer)) {
+                return $default;
+            } else {
+                return $answer;
             }
-            $defaultValueFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . md5($line);
-            if (file_exists($defaultValueFile)) {
-                $default = $genericDefault(file_get_contents($defaultValueFile));
-            }
-            print ($default('') ? ' [' . $default('') . ']' : '') . ': ';
-            while (true) {
-                $answer = $default(Seld\CliPrompt\CliPrompt::prompt());
-                if ($answer !== null) {
-                    file_put_contents($defaultValueFile, $answer);
-                    break;
-                }
-                print '↳ ';
-            }
-            return function (Closure $transform) use ($answer) {
-                return $transform($answer);
-            };
         };
     };
-    return function (string $line, bool $new_line = true) use ($prompt) : Closure {
+
+    return function (Closure $default = null) use ($genericDefault, $line) {
+        if ($default === null) {
+            $default = $genericDefault(null);
+        }
+        $defaultValueFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . md5($line);
+        if (file_exists($defaultValueFile)) {
+            $default = $genericDefault(file_get_contents($defaultValueFile));
+        }
+        print ($default('') ? ' [' . $default('') . ']' : '') . ': ';
+        while (true) {
+            $answer = $default(Seld\CliPrompt\CliPrompt::prompt());
+            if ($answer !== null) {
+                file_put_contents($defaultValueFile, $answer);
+                break;
+            }
+            print '↳ ';
+        }
+        return function (Closure $transform) use ($answer) {
+            return $transform($answer);
+        };
+    };
+});
+
+function console(): Closure
+{
+    return function (string $line, bool $new_line = true) : Closure {
         print ($new_line ? PHP_EOL : '') . $line;
-        return $prompt($line);
+        return f::prompt($line);
     };
 }
 

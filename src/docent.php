@@ -6,7 +6,7 @@ use function Functional\map;
 return function (Closure $console, Closure $startDateTme) {
     (require __DIR__ . DIRECTORY_SEPARATOR . 'check.php')($startDateTme)(['Klopt het rooster met je inzet en je harde blokkades?' => function (Closure $events): Closure {
         return ifcount(filter($events('https://rooster.avans.nl/gcal/Dhameijer'), function (\ICal\Event $event): bool {
-            return $event->blocking && ($event->cstart->isFriday() || $event->cend->isFriday());
+            return $event->blocking && ($event->cstart->isWednesday() || $event->cend->isWednesday());
         }), answerYes(), function (array $badEvents) {
             return function (Closure $console) use ($badEvents) : void {
                 $console('Nee: ', false);
