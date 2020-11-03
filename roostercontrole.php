@@ -67,9 +67,7 @@ function duration(array $events)
         $duration += $chainEvent->cstart->diffInMinutes($chainEvent->cend);
     }
     return $duration;
-}
-
-;
+};
 
 
 function events(string $iCalURL, Closure $eventFilter)
